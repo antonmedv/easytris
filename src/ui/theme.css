@@ -1,0 +1,56 @@
+/* Design tokens. Every color and motion duration in the app comes from here. */
+:root {
+  color-scheme: dark;
+
+  --color-bg: #101014;
+  --color-board: #17171c;
+  --color-grid: rgba(255, 255, 255, 0.04);
+  --color-text: #e6e6e6;
+  --color-muted: #8a8a94;
+  --color-focus: #4cc9f0;
+  --color-overlay: rgba(16, 16, 20, 0.72);
+  --color-shadow: rgba(0, 0, 0, 0.45);
+  --color-cell-highlight: rgba(255, 255, 255, 0.18);
+  --color-key-bg: rgba(255, 255, 255, 0.08);
+  --color-rule: rgba(255, 255, 255, 0.07);
+
+  --color-i: #4cc9f0;
+  --color-o: #f9c74f;
+  --color-t: #b388eb;
+  --color-s: #80ed99;
+  --color-z: #ef476f;
+  --color-j: #4895ef;
+  --color-l: #f8961e;
+
+  --ghost-opacity: 0.22;
+  --locked-saturation: 0.82;
+  --radius-cell: 2px;
+  --radius-card: 16px;
+
+  --top-bar-height: 48px;
+  --gutter: 12px;
+  --hit-target: 44px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Motion durations. Reduced motion zeroes the transforms and keeps only fades. */
+  --motion-move: 50ms;
+  --motion-lock: 100ms;
+  --motion-nudge: 80ms;
+  --motion-clear-flash: 80ms;
+  --motion-clear-fade: 120ms;
+  --motion-slide: 120ms;
+  --motion-over: 400ms;
+  --motion-overlay: 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-move: 0ms;
+    --motion-nudge: 0ms;
+    --motion-slide: 0ms;
+  }
+}

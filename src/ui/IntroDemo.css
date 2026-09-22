@@ -1,0 +1,446 @@
+/*
+ * The sketch under the title, in the three beats the game itself takes: it
+ * reads the board, scores the seven kinds, and sends the one that fits.
+ *
+ * IntroDemo.tsx owns the clock. It hands each beat's length down as a custom
+ * property and names the current beat in `data-beat`, so every keyframe below
+ * only ever carves up a beat it was given, and the caption can never drift out
+ * of step with the board.
+ *
+ * Rules with no `[data-beat]` prefix draw the held frame — the piece already in
+ * the well — which is what reduced motion and a card on its way out get.
+ */
+
+.intro {
+  --cell: 16px;
+  --glyph: 5px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+/* The candidates ---------------------------------------------------------- */
+
+.intro-rail {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  height: calc(var(--glyph) * 2);
+}
+
+.intro-glyph {
+  position: relative;
+  width: calc(var(--w) * var(--glyph));
+  height: calc(var(--h) * var(--glyph));
+  opacity: 0.16;
+}
+
+.intro-glyph--chosen {
+  opacity: 1;
+}
+
+/* The ring marks the kind the game settled on; it takes that kind's colour. */
+.intro-glyph--chosen::after {
+  content: "";
+  position: absolute;
+  inset: -4px -5px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px var(--cell-color);
+  opacity: 0.55;
+}
+
+.intro-glyph-cell {
+  position: absolute;
+  top: calc(var(--y) * var(--glyph));
+  left: calc(var(--x) * var(--glyph));
+  width: var(--glyph);
+  height: var(--glyph);
+}
+
+.intro-glyph-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0.5px;
+  border-radius: 1px;
+  background: var(--cell-color);
+}
+
+/* The board --------------------------------------------------------------- */
+
+.intro-board {
+  position: relative;
+  width: calc(var(--cols) * var(--cell));
+  height: calc(var(--rows) * var(--cell));
+  border-radius: 4px;
+  background-color: var(--color-bg);
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  overflow: hidden;
+}
+
+/* The field is stack and piece together: what a line clear takes away. */
+.intro-field,
+.intro-stack,
+.intro-piece {
+  position: absolute;
+  inset: 0;
+}
+
+.intro-cell {
+  position: absolute;
+  top: calc(var(--y) * var(--cell));
+  left: calc(var(--x) * var(--cell));
+  width: var(--cell);
+  height: var(--cell);
+}
+
+.intro-cell::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: var(--radius-cell);
+  background: var(--cell-color);
+  box-shadow: inset 0 1px 0 var(--color-cell-highlight);
+}
+
+/* Locked cells sit back a little, exactly as they do on the real board. */
+.intro-stack .intro-cell::after {
+  filter: saturate(var(--locked-saturation));
+}
+
+/* The gap the game found: one column wide and four deep, which is an I. */
+.intro-well {
+  position: absolute;
+  top: calc(var(--stack-top) * var(--cell));
+  left: calc(var(--well) * var(--cell));
+  width: var(--cell);
+  height: calc(var(--depth) * var(--cell));
+  border: 1px dashed var(--color-muted);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.intro-scan {
+  position: absolute;
+  top: calc(var(--cell) * -3);
+  left: 0;
+  right: 0;
+  height: calc(var(--cell) * 3);
+  background: linear-gradient(transparent, var(--color-cell-highlight), transparent);
+  opacity: 0;
+}
+
+/* The caption ------------------------------------------------------------- */
+
+/*
+ * The three lines share one grid cell and cross-fade in place, so the card
+ * never changes height mid-sentence. In the held frame they arrive as one
+ * string instead, which is also how a screen reader hears them.
+ */
+.intro-caption {
+  display: grid;
+  margin: 0;
+  max-width: 32ch;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.intro-line {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.intro[data-beat="read"] .intro-line[data-line="read"],
+.intro[data-beat="pick"] .intro-line[data-line="pick"],
+.intro[data-beat="send"] .intro-line[data-line="send"] {
+  opacity: 1;
+}
+
+/* Beat 1: read ------------------------------------------------------------ */
+
+.intro[data-beat="read"] .intro-field {
+  animation: intro-restack var(--read-ms) linear both;
+}
+
+.intro[data-beat="read"] .intro-scan {
+  animation: intro-scan var(--read-ms) ease-in-out both;
+}
+
+.intro[data-beat="read"] .intro-well {
+  animation: intro-find var(--read-ms) ease-out both;
+}
+
+.intro[data-beat="read"] .intro-glyph {
+  opacity: 0.16;
+}
+
+.intro[data-beat="read"] .intro-glyph--chosen::after {
+  opacity: 0;
+}
+
+/* The stack is back after the clear that ended the last turn. */
+@keyframes intro-restack {
+  0% {
+    opacity: 0;
+  }
+  20%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  10%,
+  60% {
+    opacity: 1;
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: translateY(calc((var(--rows) + 3) * var(--cell)));
+  }
+}
+
+@keyframes intro-find {
+  0%,
+  52% {
+    opacity: 0;
+  }
+  68%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Beat 2: pick ------------------------------------------------------------ */
+
+/*
+ * Each kind lights in turn — the seven the selector actually scores — and then
+ * every one but the fit falls away. The two animations share the element: the
+ * first is the sweep, the second the verdict, and it starts once the sweep has
+ * passed the last glyph.
+ */
+.intro[data-beat="pick"] .intro-glyph {
+  animation-name: intro-consider, intro-reject;
+  animation-duration: calc(var(--pick-ms) * 0.26), calc(var(--pick-ms) * 0.2);
+  animation-timing-function: ease-out, ease-out;
+  animation-fill-mode: both, forwards;
+  /* Longhands, so the chosen kind below can swap its verdict and inherit this
+   * timing: the sweep is 7 glyphs at 0.055 plus one pulse, and 0.6 is where it
+   * ends. The two must move together. */
+  animation-delay: calc(var(--i) * var(--pick-ms) * 0.055), calc(var(--pick-ms) * 0.6);
+}
+
+.intro[data-beat="pick"] .intro-glyph--chosen {
+  animation-name: intro-consider, intro-elect;
+  animation-duration: calc(var(--pick-ms) * 0.26), calc(var(--pick-ms) * 0.26);
+  animation-timing-function: ease-out, cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.intro[data-beat="pick"] .intro-glyph--chosen::after {
+  animation: intro-ring calc(var(--pick-ms) * 0.3) ease-out both;
+  animation-delay: calc(var(--pick-ms) * 0.6);
+}
+
+.intro[data-beat="pick"] .intro-well {
+  animation: intro-await calc(var(--pick-ms) * 0.5) ease-in-out infinite;
+}
+
+@keyframes intro-consider {
+  0%,
+  100% {
+    opacity: 0.16;
+  }
+  45% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes intro-reject {
+  from {
+    opacity: 0.16;
+  }
+  to {
+    opacity: 0.07;
+  }
+}
+
+@keyframes intro-elect {
+  from {
+    opacity: 0.16;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes intro-ring {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+
+@keyframes intro-await {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Beat 3: send ------------------------------------------------------------ */
+
+.intro[data-beat="send"] .intro-piece {
+  animation: intro-drop var(--send-ms) linear both;
+}
+
+.intro[data-beat="send"] .intro-field {
+  animation: intro-clear var(--send-ms) linear both;
+}
+
+.intro[data-beat="send"] .intro-well {
+  animation: intro-filled var(--send-ms) linear both;
+}
+
+.intro[data-beat="send"] .intro-glyph {
+  opacity: 0.07;
+}
+
+/* The chosen glyph hands off to the piece arriving on the board. */
+.intro[data-beat="send"] .intro-glyph--chosen {
+  animation: intro-handoff calc(var(--send-ms) * 0.26) ease-in both;
+}
+
+@keyframes intro-drop {
+  0% {
+    transform: translateY(calc(var(--rows) * var(--cell) * -1));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.9, 0.7);
+  }
+  26%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* The same flash-then-fade the real board gives a cleared row. */
+@keyframes intro-clear {
+  0%,
+  42% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  54% {
+    opacity: 1;
+    filter: brightness(2.4);
+  }
+  66%,
+  100% {
+    opacity: 0;
+    filter: brightness(2.4);
+  }
+}
+
+@keyframes intro-filled {
+  0% {
+    opacity: 1;
+  }
+  26%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-handoff {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1.2);
+  }
+  to {
+    opacity: 0.07;
+    transform: translateY(5px) scale(1);
+  }
+}
+
+/* The piece belongs to the third beat only; the first two are still looking. */
+.intro[data-beat="read"] .intro-piece,
+.intro[data-beat="pick"] .intro-piece {
+  opacity: 0;
+}
+
+/* Fitting the card -------------------------------------------------------- */
+
+/*
+ * The play area is a size container. A short one gets a smaller sketch, and one
+ * shorter still gets none: the card must never outgrow the board behind it.
+ */
+@container (max-height: 620px) {
+  .intro {
+    --cell: 12px;
+    --glyph: 4px;
+    gap: 6px;
+  }
+}
+
+@container (max-height: 500px) {
+  .intro-rail,
+  .intro-board {
+    display: none;
+  }
+
+  /* No room for the picture, so the three lines run together as one sentence. */
+  .intro-caption {
+    display: block;
+  }
+
+  .intro-line {
+    opacity: 1;
+  }
+
+  .intro-line + .intro-line::before {
+    content: " ";
+  }
+}
+
+/* Shorter still, and even the sentence has to go for the card to fit. */
+@container (max-height: 400px) {
+  .intro {
+    display: none;
+  }
+}
+
+/* The clock stops for reduced motion; this is the backstop if it ever runs. */
+@media (prefers-reduced-motion: reduce) {
+  .intro[data-beat] .intro-field,
+  .intro[data-beat] .intro-scan,
+  .intro[data-beat] .intro-well,
+  .intro[data-beat] .intro-piece,
+  .intro[data-beat] .intro-glyph,
+  .intro[data-beat] .intro-glyph--chosen::after {
+    animation: none;
+  }
+
+  .intro[data-beat] .intro-piece {
+    opacity: 1;
+  }
+
+  .intro[data-beat] .intro-line {
+    transition: none;
+  }
+}

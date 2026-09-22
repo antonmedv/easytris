@@ -1,0 +1,29 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+
+/*
+ * The play area is a size container. The cell is the largest square that lets
+ * 10 columns fit the width and 20 rows fit the height, minus a gutter, so the
+ * board never overflows in either axis on any viewport.
+ */
+.play-area {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  /* The play area is the gesture surface: the browser gets none of the touches.
+   * Selection is off document-wide, in index.css. */
+  touch-action: none;
+  --cell: min((100cqw - 2 * var(--gutter)) / 10, (100cqh - 2 * var(--gutter)) / 20);
+}
+
+.board-slot {
+  line-height: 0;
+}

@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  Source for public/og.png, the social card. Rendered at 1200x630 by
+  tools/assets.sh; the tokens below are copies of src/ui/theme.css, so the card
+  is the game in its own colors rather than a picture of it.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      :root {
+        --bg: #101014;
+        --board: #17171c;
+        --grid: rgba(255, 255, 255, 0.04);
+        --text: #e6e6e6;
+        --muted: #8a8a94;
+        --i: #4cc9f0;
+        --o: #f9c74f;
+        --t: #b388eb;
+        --s: #80ed99;
+        --z: #ef476f;
+        --j: #4895ef;
+        --l: #f8961e;
+        --cell: 27px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        width: 1200px;
+        height: 630px;
+        display: flex;
+        align-items: center;
+        gap: 96px;
+        padding: 0 88px;
+        background: var(--bg);
+        background-image: radial-gradient(
+          60% 70% at 76% 50%,
+          rgba(179, 136, 235, 0.12),
+          transparent 70%
+        );
+        color: var(--text);
+        font-family: -apple-system, system-ui, sans-serif;
+        overflow: hidden;
+      }
+      .copy {
+        flex: 1;
+        display: grid;
+        justify-content: center;
+      }
+      .mark {
+        display: block;
+        width: 76px;
+        height: 76px;
+        margin-bottom: 34px;
+      }
+      h1 {
+        font-size: 112px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+      .lede {
+        margin-top: 26px;
+        max-width: 13ch;
+        text-wrap: balance;
+        color: var(--muted);
+        font-size: 40px;
+        font-weight: 400;
+        line-height: 1.32;
+        letter-spacing: -0.01em;
+      }
+      .board {
+        position: relative;
+        flex: none;
+        width: calc(var(--cell) * 10);
+        height: calc(var(--cell) * 20);
+        border-radius: 6px;
+        background-color: var(--board);
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: var(--cell) var(--cell);
+        box-shadow: 0 24px 72px rgba(0, 0, 0, 0.45);
+      }
+      .cell {
+        position: absolute;
+        width: var(--cell);
+        height: var(--cell);
+        left: calc(var(--x) * var(--cell));
+        top: calc(var(--y) * var(--cell));
+      }
+      .cell::after {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: 2px;
+        background: var(--color);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      }
+      .cell--locked::after {
+        filter: saturate(0.82);
+      }
+      .cell--ghost::after {
+        background: color-mix(in srgb, var(--color) 26%, transparent);
+        box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color) 62%, transparent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="copy">
+      <svg class="mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#b388eb">
+          <rect x="12.5" y="8.5" width="7" height="7" rx="1.5" />
+          <rect x="4.5" y="16.5" width="7" height="7" rx="1.5" />
+          <rect x="12.5" y="16.5" width="7" height="7" rx="1.5" />
+          <rect x="20.5" y="16.5" width="7" height="7" rx="1.5" />
+        </g>
+      </svg>
+      <h1>Easytris</h1>
+      <p class="lede">Tetris that wants you to win.</p>
+    </div>
+    <div class="board" id="board"></div>
+    <script>
+      // The stack leaves a well open on the right; the I piece on its way down is
+      // exactly the one that clears it — the game's pitch, drawn.
+      const STACK = [
+        "..T...S...",
+        ".TTT..SS..",
+        "JJZZ.LSOO.",
+        "JZZLLLOOI.",
+        "JJLLOOIIZ.",
+        "IIIILLZZJ.",
+      ];
+      const TOP = 14;
+      const board = document.getElementById("board");
+
+      function cell(x, y, kind, variant) {
+        const node = document.createElement("div");
+        node.className = "cell cell--" + variant;
+        node.style.setProperty("--x", x);
+        node.style.setProperty("--y", y);
+        node.style.setProperty("--color", "var(--" + kind.toLowerCase() + ")");
+        board.append(node);
+      }
+
+      STACK.forEach((row, index) => {
+        [...row].forEach((kind, x) => {
+          if (kind !== ".") cell(x, TOP + index, kind, "locked");
+        });
+      });
+
+      for (let y = 16; y <= 19; y++) cell(9, y, "I", "ghost");
+      for (let y = 4; y <= 7; y++) cell(9, y, "I", "active");
+    </script>
+  </body>
+</html>

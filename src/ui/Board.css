@@ -1,0 +1,146 @@
+.board {
+  position: relative;
+  width: calc(var(--cell) * 10);
+  height: calc(var(--cell) * 20);
+  border-radius: 4px;
+  background-color: var(--color-board);
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+}
+
+.board-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Rows are absolutely positioned by their grid row so a line clear slides them with a transition. */
+.board-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(10, var(--cell));
+  height: var(--cell);
+  transform: translateY(calc(var(--y) * var(--cell)));
+  transition: transform var(--motion-slide) ease-out;
+  will-change: transform;
+}
+
+.board-cell {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+}
+
+.board-cell--filled::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: var(--radius-cell);
+  background: var(--cell-color);
+  box-shadow: inset 0 1px 0 var(--color-cell-highlight);
+}
+
+/* Locked cells sit back a little so the active piece pops. */
+.board-row .board-cell--filled::after {
+  filter: saturate(var(--locked-saturation));
+}
+
+.board-piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(calc(var(--x) * var(--cell)), calc(var(--y) * var(--cell)));
+}
+
+.board-piece--active {
+  transition: transform var(--motion-move) ease-out;
+  will-change: transform;
+}
+
+.board-piece .board-cell {
+  position: absolute;
+  top: calc(var(--y) * var(--cell));
+  left: calc(var(--x) * var(--cell));
+}
+
+.board-piece--ghost .board-cell--filled::after {
+  background: color-mix(in srgb, var(--cell-color) calc(var(--ghost-opacity) * 100%), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cell-color) 55%, transparent);
+}
+
+[data-kind="I"] {
+  --cell-color: var(--color-i);
+}
+[data-kind="O"] {
+  --cell-color: var(--color-o);
+}
+[data-kind="T"] {
+  --cell-color: var(--color-t);
+}
+[data-kind="S"] {
+  --cell-color: var(--color-s);
+}
+[data-kind="Z"] {
+  --cell-color: var(--color-z);
+}
+[data-kind="J"] {
+  --cell-color: var(--color-j);
+}
+[data-kind="L"] {
+  --cell-color: var(--color-l);
+}
+
+/* Motion ------------------------------------------------------------------ */
+
+/* Rows being cleared flash toward white, then fade while the engine holds them. */
+.board-row--clearing {
+  animation: board-row-clear calc(var(--motion-clear-flash) + var(--motion-clear-fade)) linear
+    forwards;
+}
+
+@keyframes board-row-clear {
+  0% {
+    filter: brightness(1);
+    opacity: 1;
+  }
+  40% {
+    filter: brightness(2.4);
+    opacity: 1;
+  }
+  100% {
+    filter: brightness(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes board-row-clear-reduced {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-row--clearing {
+    animation-name: board-row-clear-reduced;
+  }
+}
+
+/* Game over: the stack greys out from the bottom row up over --motion-over. */
+.board--over .board-row {
+  animation: board-row-over 160ms ease-out both;
+  animation-delay: calc(var(--over-delay) / 20 * var(--motion-over));
+}
+
+@keyframes board-row-over {
+  to {
+    filter: grayscale(1) brightness(0.55);
+  }
+}

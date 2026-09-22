@@ -1,0 +1,56 @@
+.top-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--top-bar-height);
+  padding: 0 calc(var(--gutter) / 2) 0 var(--gutter);
+}
+
+.top-bar-lines {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.top-bar-lines-value {
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.top-bar-actions {
+  display: flex;
+}
+
+.top-bar-button {
+  display: grid;
+  place-items: center;
+  width: var(--hit-target);
+  height: var(--hit-target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.top-bar-button:hover:not(:disabled),
+.top-bar-button[aria-pressed="true"] {
+  color: var(--color-text);
+}
+
+.top-bar-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
